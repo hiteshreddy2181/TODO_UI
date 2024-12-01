@@ -1,95 +1,80 @@
-import { useState } from "react";
-import "./App.css";
-import { FaEdit } from "react-icons/fa";
-import { FaTrash } from "react-icons/fa";
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import Login from './components/login';
+import Register from './components/register';
+import Categories from './components/categories-component';
+import Tasks from './components/task-component';
+import { ProtectedRoute } from './ProtectedRoute';
+import AppProvider from './Context/AppProvider';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
+const darkTheme = createTheme({
+  palette: {
+    mode: 'dark',
+    background: {
+      default: '#121212',
+      paper: '#1e1e1e',
+    },
+    text: {
+      primary: '#ffffff',
+      secondary: '#b0b0b0',
+    },
+  },
+  components: {
+    MuiTable: {
+      styleOverrides: {
+        root: {
+          backgroundColor: '#1e1e1e',
+        },
+      },
+    },
+    MuiTableCell: {
+      styleOverrides: {
+        root: {
+          color: '#ffffff',
+        },
+      },
+    },
+    MuiTableHead: {
+      styleOverrides: {
+        root: {
+          backgroundColor: '#333333',
+        },
+      },
+    },
+  },
+});
 
-function App() {
-  const [editIndex,setEditIndex]=useState(-1);
-  const [editBtn, setEditBtnState] = useState(false);
-  const [edit, setEdit] = useState("");
-  const [task,setTask]=useState("");
-  const [tasks,setTasks] = useState([]);
- 
-  const changeStateOfEdit = (value) => {
-
-    console.log(value);
-    setEditIndex(value);
-    setEdit(tasks[value]);
-    setEditBtnState(true);
-  }
-  const editBtnHandlde =()=>{
-    console.log(editIndex);
-    const newtodo=[...tasks];
-    newtodo[editIndex]=edit;
-    console.log(newtodo);
-    setTasks(newtodo);
-    setEditBtnState(false);
-  }
-  const  addtask=e=>{
-    setEditBtnState(false);
-    e.preventDefault();
-    if (task===''){
-      alert("task is empty fill the task")
-    }
-    else{
-      // const newtodo=[...tasks,task];
-      // setTasks(newtodo); 
-      // setTask("");
-    }
-    
-    
-  }
-  const deleteTask=(val)=>{
-    setEditBtnState(false);
-     const newtodo=tasks.filter((task,index)=>index!==val);
-     setTasks(newtodo);
-  }
-  // console.log(tasks);
+const App = () => {
   return (
-    <div className="App">
-      <div className="todolist-box">
-        <h1>Get things Done !</h1>
-        <div className="add-item">
-          <input
-            placeholder="what is the task today!"
-            className="input-box"
-            value={task}
-            onChange={(e)=>setTask(e.target.value)}
-          ></input>
-          <button className="add-btn"type="submit" onClick={addtask}>Add item</button>
-        </div>
-        {editBtn ? (
-          <>
-            <div className="edit-item">
-              <input className="input-box" placeholder="what is the task today!" value={edit} onChange={(e)=>setEdit(e.target.value)}></input>
-              <button className="add-btn" type="submit" onClick={editBtnHandlde}>Edit item</button>
-            </div>
-          </>
-        ) : (
-          <div></div>
-        )}
-
-        {tasks.map((value) => {
-          return (
-            <div key={value}>
-              <div className="item">
-                <div className="item-text">{value}</div>
-                <div className="icons">
-                  <span onClick={() => changeStateOfEdit(tasks.indexOf(value))}>
-                    <FaEdit />
-                  </span>
-                  <span onClick={()=>deleteTask(tasks.indexOf(value))}>
-                    <FaTrash />
-                  </span>
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
+    <>
+      <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} />
+      <AppProvider>
+        <ThemeProvider theme={darkTheme}>
+          <Router>
+            <Routes>
+              <Route path="/" element={<Navigate to="/register" />} /> {/* Initial redirect to Register */}
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/categories" element={
+                <ProtectedRoute>
+                  <Categories />
+                </ProtectedRoute>
+              } />
+              <Route path="/tasks" element={
+                <ProtectedRoute>
+                  <Tasks />
+                </ProtectedRoute>
+              } />
+              <Route path="*" element={<Navigate to="/register" />} /> {/* Redirect any unspecified routes to Register */}
+            </Routes>
+          </Router>
+        </ThemeProvider>
+      </AppProvider>
+    </>
   );
-}
+};
 
 export default App;
